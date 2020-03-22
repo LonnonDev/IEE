@@ -40,6 +40,7 @@ import asyncio
 from config import *
 
 bottype = list(sys.argv)
+print(bottype)
 if bottype[1] == 'normal':
 	token = normaltoken
 elif bottype[1] == 'beta':
@@ -58,7 +59,7 @@ cogs = []
 for f in listdir(path):
 	file = f"cogs.{f}".replace('.py', '')
 	cogs += [file]
-#cogs.remove('cogs.__pycache__')
+cogs.remove('cogs.__pycache__')
 #cogs.remove('cogs.errorhandler')
 
 
@@ -69,4 +70,5 @@ bot = commands.AutoShardedBot(case_insensitive=True, loop=None, shard_id=shardid
 for extension in cogs:
 	bot.load_extension(extension)
 
+print("Loaded")
 bot.run(token)
