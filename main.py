@@ -46,6 +46,18 @@ if bottype[1] == 'normal':
 elif bottype[1] == 'beta':
 	token = betatoken
 
+conn = sqlite3.connect("people.db")
+c = conn.cursor()
+
+c.execute("""CREATE TABLE IF NOT EXISTS people (
+			id blob,
+			coin real,
+			bank real,
+			bankmax real,
+			server blob,
+			inventory blob
+			)""")
+conn.commit()
 
 # shard id
 shardids = 1
