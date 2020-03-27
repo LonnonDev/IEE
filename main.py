@@ -38,6 +38,8 @@ import datetime
 import asyncio
 # import the token
 from config import *
+# Changes the directory
+os.chdir('F:/IEE')
 
 bottype = list(sys.argv)
 print(bottype)
@@ -53,9 +55,9 @@ c.execute("""CREATE TABLE IF NOT EXISTS people (
 			id blob,
 			coin real,
 			bank real,
-			bankmax real,
 			server blob,
-			inventory blob
+			inventory blob,
+			mines blob
 			)""")
 conn.commit()
 

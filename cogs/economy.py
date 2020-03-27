@@ -89,100 +89,19 @@ class Economy(commands.Cog, name="Economy Commands"):
 		fetch = fetchall[0]
 		pocket = round(fetch[1], 2)
 		bank = round(fetch[2], 2)
-		bankmax = round(fetch[3], 2)
-		mines = fetch[6]
-		c.execute("UPDATE people SET coin=?, bank=?, bankmax=? WHERE id=? AND server=?", (pocket, bank, bankmax, person, server))
+		mines = fetch[5]
+		c.execute("UPDATE people SET coin=?, bank=? WHERE id=? AND server=?", (pocket, bank, person, server))
 		# commit
 		conn.commit()
-		if bankmax == '∞':
-			bankmax = float('inf')
-		else:
-			bankmax = float('{:0.2f}'.format(fetch[3]))
 		pocket = float('{:0.2f}'.format(fetch[1]))
 		bank = float('{:0.2f}'.format(fetch[2]))
 		# embeds
 		embed=discord.Embed(title=f"Balance", color=color)
 		embed.set_author(name=membername[:-5],icon_url=personog.avatar_url)
 		embed.add_field(name="Pocket", value="{:,.2f} Ʀ".format(pocket), inline=True)
-		if bankmax != '∞':
-			embed.add_field(name="Bank", value="{:,.2f}/{} Ʀ".format(bank, bankmax), inline=True)
-		else:
-			embed.add_field(name="Bank", value="{:,.2f}/{:,.2f} Ʀ".format(bank, bankmax), inline=True)
+		embed.add_field(name="Bank", value="{:,.2f} Ʀ".format(bank,), inline=True)
 		embed.add_field(name="Total", value="{:,.2f} Ʀ".format(pocket + bank), inline=True)
-		embed.add_field(name="Bank Left", value="{:,.2f} Ʀ".format(bankmax - bank), inline=True)
 		embed.add_field(name="Mines", value="You have {:,.2f} mines".format(float(mines)), inline=True)
-		await ctx.send(embed=embed)
-
-	# Leaderboard Command
-	@commands.command(aliases=['lb',])
-	@commands.is_owner()
-	async def leaderboard(self, ctx, typeoflb: str = 'p'):
-		"""
-		Checks the leaderboard top 5
-		Alias = LB
-		"""
-		typeoflb = typeoflb.lower()
-		if typeoflb != 'bank' and typeoflb != 'pocket' and typeoflb != 'b' and typeoflb != 'p':
-			# Silly random color
-			color = random.randint(0, 0xFFFFFF)
-			errortype = 'Leaderboard Error'
-			error = f"{typeoflb} is not a valid type of Balance, Valid types are, bank, pocket, b, p"
-			embed=discord.Embed(title=f"Error {errortype}", color=color)
-			embed.add_field(name="-", value=f"```\n{error}\n```", inline=False)
-			await ctx.send(embed=embed, delete_after=30)
-			await asyncio.sleep(30)
-			try:
-				await ctx.message.delete()
-			except:
-				pass
-			return
-		person = str(ctx.author.id)
-		server = str(ctx.guild.id)
-		personhandler(person, server)
-		# Silly random color
-		color = random.randint(0, 0xFFFFFF)
-		# get the people
-		c.execute("SELECT * FROM people")
-		# commit
-		conn.commit()
-		# fetchall
-		fetch = c.fetchall()
-		# sort
-		fetchpocket = fetch.sort(key = lambda x: x[1], reverse=True) 
-		fetchbank = fetch.sort(key = lambda x: x[2], reverse=True) 
-		# range
-		i = 0
-		i2 = 0
-		# list length
-		fetchlength = len(fetch)
-		# embed
-		embed=discord.Embed(title=f"Balance Leaderboard", color=color)
-		# get first 10 results
-		if typeoflb == 'pocket' or typeoflb == 'p':
-			for i in range(5):
-				fetchi = fetchpocket[i]
-				name = str(self.bot.get_user(int(fetchi[0])))[:-5]
-				pocket = fetchi[1]
-				embed.add_field(name=f"#{i + 1} {name}", value="Pocket: {:,.2f}".format(pocket), inline=False)
-				i += 1 
-		elif typeoflb == 'bank' or typeoflb == 'b':
-			for i in range(5):
-				fetchi = fetchbank[i]
-				name = str(self.bot.get_user(int(fetchi[0])))[:-5]
-				bank = fetchi[2]
-				embed.add_field(name=f"#{i + 1} {name}", value="Bank: {:,.2f}".format(bank), inline=False)
-				i += 1 
-		# gets the user
-		for i2 in range(fetchlength):
-			fetchi = fetch[i2]
-			try:
-				fetchi.index(str(ctx.author.id))
-				pocket = fetchi[1]
-				bank = fetchi[2]
-				total = int(pocket) + int(bank)
-				embed.add_field(name=f"-", value="**(YOU)\n #{i2 + 1} {str(ctx.author)[:-5]}\nPocket: {:,.2f} Bank: {:,.2f} Total Bal: {:,.2f}**".format(pocket, bank, total), inline=False)
-			except:
-				pass
 		await ctx.send(embed=embed)
 
 	@commands.command()
@@ -214,18 +133,12 @@ class Economy(commands.Cog, name="Economy Commands"):
 		# user vars
 		pocket = float(fetchall[0][1])
 		bank = float(fetchall[0][2])
-		bankmax = float(fetchall[0][3])
-		leftovers = bankmax - bank
 		# get the type of amount
 		try:
 			amount = round(float(amount), 2)
 		except:
 			if amount == 'all' or amount == 'max':
-				amount = leftovers - pocket
-				if amount <= 0:
-					amount = leftovers
-				else:
-					amount = pocket
+				amount = pocket
 			elif amount == 'half':
 				amount = (pocket/2)
 			elif amount == 'quarter':
@@ -245,20 +158,6 @@ class Economy(commands.Cog, name="Economy Commands"):
 			embed=discord.Embed(title=f"Not Enough...", color=color)
 			embed.set_author(name=str(ctx.author)[:-5],icon_url=ctx.author.avatar_url)
 			embed.add_field(name="-", value=f"You Don't have enough in your pocket for that", inline=True)
-			await ctx.send(embed=embed)
-		elif amount > bankmax:
-			# Silly random color
-			color = random.randint(0, 0xFFFFFF)
-			embed=discord.Embed(title=f"Bankmax Too Small...", color=color)
-			embed.set_author(name=str(ctx.author)[:-5],icon_url=ctx.author.avatar_url)
-			embed.add_field(name="-", value=f"You Don't have enough room in your bank for that", inline=True)
-			await ctx.send(embed=embed)
-		elif amount > leftovers:
-			# Silly random color
-			color = random.randint(0, 0xFFFFFF)
-			embed=discord.Embed(title=f"Bankmax Too Small...", color=color)
-			embed.set_author(name=str(ctx.author)[:-5],icon_url=ctx.author.avatar_url)
-			embed.add_field(name="-", value=f"You Don't have enough room in your bank for that", inline=True)
 			await ctx.send(embed=embed)
 		else:
 			# Silly random color
@@ -286,7 +185,7 @@ class Economy(commands.Cog, name="Economy Commands"):
 		# user vars
 		pocket = float(fetchall[0][1])
 		bank = float(fetchall[0][2])
-		bankmax = float(fetchall[0][3])
+		
 		# get the type of amount
 		try:
 			amount = round(float(amount), 2)
@@ -364,41 +263,11 @@ class Economy(commands.Cog, name="Economy Commands"):
 		# commit
 		conn.commit()
 
-			
-class gambling(commands.Cog, name="Gambling Commands"):
-	def __init__(self, bot):
-		self.bot = bot
-
-	@commands.command(aliases=['bj'])
-	@commands.is_owner()
-	@commands.cooldown(1, 5, commands.BucketType.user)
-	async def blackjack(self, ctx, gambleamount: int):
-		async def author(message):
-			return message.author.id == ctx.author.id
-		player = []
-		dealer = []
-		for x in range(2):
-			rng = random.randint(1,11)
-			if rng == 11:
-				await ctx.send("You got an ace, do you want it to be a 1 or a 11")
-				message = await self.bot.wait_for('message', timeout=60.0, check=author)
-				if message == '1':
-					player += '1'
-				elif message == '11':
-					player += '11'
-				else:
-					await ctx.send("Not a valid option, defaulting to 1")
-					player += '1'
-			else:
-				await ctx.send(rng)
-				player += str(rng)
-		await ctx.send(player)
-
 def taxgive(give, server):
 	if server == '636996896161923093':
 		person = str(407313426751160353)
-	elif server == '577072824355782656':
-		person = str(670719216852140158)
+	elif server == '418499762321358848':
+		person = str(418499762321358848)
 	elif server == '680036875603542118':
 		person = str(600798393459146784)
 	c.execute("SELECT * FROM people WHERE id=? AND server=?", (person, server))
@@ -424,11 +293,11 @@ def personhandler(person, server):
 	# fetch
 	if c.fetchone() == None:
 		# insert values for person
-		c.execute("INSERT INTO people (id, coin, bank, bankmax, server, inventory, mines) VALUES (?, 0, 0, 50, ?, '', 0)", (person, server))
+		c.execute("INSERT INTO people (id, coin, bank, server, inventory, mines) VALUES (?, 0, 0, ?, '', 0)", (person, server))
 		conn.commit()
 
 def ded(person):
-	c.execute("UPDATE people SET coin=0, bank=0, bankmax=50 WHERE id=? AND server=?", (person, server))
+	c.execute("UPDATE people SET coin=0, bank=0 WHERE id=? AND server=?", (person, server))
 	conn.commit()
 
 # sort 
@@ -442,6 +311,5 @@ def sortFirst(val):
 def setup(bot):
 	print("Economy Commands Loaded...")
 	bot.add_cog(Economy(bot))
-	bot.add_cog(gambling(bot))
 def teardown(bot):
 	print("Economy Commands Unloaded...")

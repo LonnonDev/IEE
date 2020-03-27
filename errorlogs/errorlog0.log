@@ -1,0 +1,18 @@
+
+15:21:09 | console  Traceback (most recent call last):
+  File "C:\Users\Lemon\AppData\Local\Programs\Python\Python38\lib\site-packages\discord\ext\commands\core.py", line 83, in wrapped
+    ret = await coro(*args, **kwargs)
+  File "F:\IEE\cogs\economy.py", line 93, in balance
+    c.execute("UPDATE people SET coin=?, bank=?, bankmax=? WHERE id=? AND server=?", (pocket, bank, bankmax, person, server))
+NameError: name 'bankmax' is not defined
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Lemon\AppData\Local\Programs\Python\Python38\lib\site-packages\discord\ext\commands\bot.py", line 892, in invoke
+    await ctx.command.invoke(ctx)
+  File "C:\Users\Lemon\AppData\Local\Programs\Python\Python38\lib\site-packages\discord\ext\commands\core.py", line 797, in invoke
+    await injected(*ctx.args, **ctx.kwargs)
+  File "C:\Users\Lemon\AppData\Local\Programs\Python\Python38\lib\site-packages\discord\ext\commands\core.py", line 92, in wrapped
+    raise CommandInvokeError(exc) from exc
+discord.ext.commands.errors.CommandInvokeError: Command raised an exception: NameError: name 'bankmax' is not defined
